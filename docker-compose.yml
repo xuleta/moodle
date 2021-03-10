@@ -19,8 +19,8 @@ services:
       - mailhog
     volumes:
       - "${MOODLE_DOCKER_WWWROOT}:/var/www/html"
-      - "${ASSETDIR}/web/apache2_faildumps.conf:/etc/apache2/conf-enabled/apach>
-      - "${ASSETDIR}/web/apache2_mailhog.conf:/etc/apache2/conf-enabled/apache2>
+      - "${ASSETDIR}/web/apache2_faildumps.conf:/etc/apache2/conf-enabled/apache2_faildumps.conf"
+      - "${ASSETDIR}/web/apache2_mailhog.conf:/etc/apache2/conf-enabled/apache2_mailhog.conf"
     environment:
       MOODLE_DOCKER_DBTYPE: pgsql
       MOODLE_DOCKER_DBNAME: moodle
