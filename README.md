@@ -1,2 +1,2 @@
 # moodle
-docker-compose moodle example
+docker-compose example based on moodlehq/moodle-docker.

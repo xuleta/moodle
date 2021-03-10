@@ -1,0 +1,125 @@
+version: "3.8"
+
+networks:
+  moodle:
+    name: moodle
+    driver: bridge
+
+services:
+  webserver:
+    image: "moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION}"
+    container_name: moodle-webserver
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+    ports:
+      - "${MOODLE_DOCKER_WEB_PORT}:80"
+    depends_on:
+      - db
+      - mailhog
+    volumes:
+      - "${MOODLE_DOCKER_WWWROOT}:/var/www/html"
+      - "${ASSETDIR}/web/apache2_faildumps.conf:/etc/apache2/conf-enabled/apach>
+      - "${ASSETDIR}/web/apache2_mailhog.conf:/etc/apache2/conf-enabled/apache2>
+    environment:
+      MOODLE_DOCKER_DBTYPE: pgsql
+      MOODLE_DOCKER_DBNAME: moodle
+      MOODLE_DOCKER_DBUSER: moodle
+      MOODLE_DOCKER_DBPASS: "m@0dl3ing"
+      MOODLE_DOCKER_BROWSER: chrome
+      MOODLE_DOCKER_WEB_HOST: "${MOODLE_DOCKER_WEB_HOST}"
+      MOODLE_DOCKER_APP: "true"
+      MOODLE_DOCKER_PHPUNIT_EXTRAS: "true"
+      MOODLE_DOCKER_WEB_PORT: "${MOODLE_DOCKER_WEB_PORT}"
+
+  db:
+    image: postgres:11
+    container_name: moodle-postgres
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+    volumes:
+      - "${MOODLE_DOCKER_DATA}/postgres:/var/lib/postgresql/data/"
+    environment:
+      POSTGRES_USER: moodle
+      POSTGRES_PASSWORD: "m@0dl3ing"
+      POSTGRES_DB: moodle
+
+  exttests:
+    image: moodlehq/moodle-exttests
+    container_name: moodle-exttests
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+
+  selenium:
+    image: "selenium/standalone-chrome${MOODLE_DOCKER_SELENIUM_SUFFIX}:3"
+    container_name: moodle-selenium
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+    volumes:
+      - /dev/shm:/dev/shm
+      - "${MOODLE_DOCKER_WWWROOT}:/var/www/html:ro"
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: moodle-mailhog
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+
+  moodleapp:
+    image: "moodlehq/moodleapp:${MOODLE_DOCKER_APP_VERSION}"
+    container_name: moodle-moodleapp
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+
+  memcached0:
+    image: memcached:1.4
+    container_name: moodle-memcached0
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+
+  memcached1:
+    image: memcached:1.4
+    container_name: moodle-memcached1
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+
+  mongo:
+    image: mongo:4.0
+    container_name: moodle-mongo
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+    volumes:
+      - "${MOODLE_DOCKER_DATA}/mongo:/data/db"
+
+  redis:
+    image: redis:3
+    container_name: moodle-redis
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+
+  solr:
+    image: solr:6.5
+    container_name: moodle-solr
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
+    entrypoint:
+      - docker-entrypoint.sh
+      - solr-precreate
+      - test
+
+  ldap:
+    image: larrycai/openldap
+    container_name: moodle-openldap
+    networks:
+      - moodle
+    restart: "${MOODLE_DOCKER_RESTART}"
